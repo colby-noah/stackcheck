@@ -23,6 +23,42 @@ type Config struct {
 	Targets []Target `yaml:"targets"`
 }
 
+type Result struct {
+	Name       string
+	Up         bool
+	StatusCode int
+	Err        error
+	Duration   time.Duration
+}
+
+func (r Result) Status() string {
+	if r.Up {
+		return "UP"
+	}
+
+	return "DOWN"
+}
+
+func check(target Target) Result {
+	start := time.Now()
+
+	resp, err := httpClient.Get(target.URL)
+	elapsed := time.Since(start)
+
+	if err != nil {
+		return Result{Name: target.Name, Err: err, Duration: elapsed}
+	}
+
+	resp.Body.Close()
+
+	return Result{
+		Name:       target.Name,
+		Up:         resp.StatusCode < 400,
+		StatusCode: resp.StatusCode,
+		Duration:   elapsed,
+	}
+}
+
 func main() {
 	data, err := os.ReadFile("./targets.yaml")
 	if err != nil {
@@ -36,15 +72,14 @@ func main() {
 	}
 
 	for _, target := range config.Targets {
-		start := time.Now()
+		r := check(target)
 
-		resp, err := httpClient.Get(target.URL)
-		if err != nil {
-			fmt.Printf("%-15s %-6s %v\n", target.Name, "DOWN", err)
-			continue
+		status := r.Status()
+
+		if r.Err != nil {
+			fmt.Printf("%-15s %-6s %v %v\n", r.Name, status, r.Err, r.Duration)
+		} else {
+			fmt.Printf("%-15s %-6s %v %v\n", r.Name, status, r.StatusCode, r.Duration)
 		}
-
-		resp.Body.Close()
-		fmt.Printf("%-15s %-6s %d %s\n", target.Name, "UP", resp.StatusCode, time.Since(start))
 	}
 }
