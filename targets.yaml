@@ -1,0 +1,7 @@
+targets:
+  - name: Asteroids
+    url: https://colby-noah.github.io/asteroids/
+  - name: Broken
+    url: https://does-not-exist.invalid/
+  - name: Google
+    url: https://www.google.com/
