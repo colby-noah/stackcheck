@@ -2,12 +2,9 @@ package main
 
 import (
 	"net/http"
+	"sync"
 	"time"
 )
-
-var httpClient = &http.Client{
-	Timeout: 5 * time.Second,
-}
 
 type Result struct {
 	Name       string
@@ -23,6 +20,24 @@ func (r Result) Status() string {
 	}
 
 	return "DOWN"
+}
+
+var httpClient = &http.Client{
+	Timeout: 5 * time.Second,
+}
+
+func checkAll(targets []Target) []Result {
+	results := make([]Result, len(targets))
+
+	var wg sync.WaitGroup
+	for i, t := range targets {
+		wg.Go(func() {
+			results[i] = check(t)
+		})
+	}
+
+	wg.Wait()
+	return results
 }
 
 func check(target Target) Result {

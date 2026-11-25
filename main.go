@@ -12,9 +12,9 @@ func main() {
 		log.Fatalf("loading config: %v", err)
 	}
 
-	for _, target := range cfg.Targets {
-		r := check(target)
+	results := checkAll(cfg.Targets)
 
+	for _, r := range results {
 		status := r.Status()
 
 		if r.Err != nil {
