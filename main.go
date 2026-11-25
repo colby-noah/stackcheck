@@ -49,7 +49,7 @@ func check(target Target) Result {
 		return Result{Name: target.Name, Err: err, Duration: elapsed}
 	}
 
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	return Result{
 		Name:       target.Name,
