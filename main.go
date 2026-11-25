@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 )
 
 func main() {
@@ -17,9 +18,9 @@ func main() {
 		status := r.Status()
 
 		if r.Err != nil {
-			fmt.Printf("%-15s %-6s %v %v\n", r.Name, status, r.Err, r.Duration)
+			fmt.Printf("%-15s %-6s %v %v\n", r.Name, status, r.Err, r.Duration.Round(time.Millisecond))
 		} else {
-			fmt.Printf("%-15s %-6s %v %v\n", r.Name, status, r.StatusCode, r.Duration)
+			fmt.Printf("%-15s %-6s %v %v\n", r.Name, status, r.StatusCode, r.Duration.Round(time.Millisecond))
 		}
 	}
 }
