@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+)
 
 func TestStatus(t *testing.T) {
 	tests := []struct {
@@ -23,4 +27,31 @@ func TestStatus(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestCheck(t *testing.T) {
+	srv := newTestServer(t, 200)
+
+	target := Target{Name: "Test", URL: srv.URL}
+	got := check(target)
+
+	wantUp := true
+	wantStatus := 200
+
+	if got.Up != wantUp {
+		t.Errorf("check().Up = %v, want %v", got.Up, wantUp)
+	}
+
+	if got.StatusCode != wantStatus {
+		t.Errorf("check().StatusCode = %d, want %d", got.StatusCode, wantStatus)
+	}
+}
+
+func newTestServer(t *testing.T, status int) *httptest.Server {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(status)
+	}))
+	t.Cleanup(srv.Close) // closes automatically when the test ends, no defer needed
+	return srv
 }
